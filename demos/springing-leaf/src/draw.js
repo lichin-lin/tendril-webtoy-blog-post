@@ -1,24 +1,21 @@
 import vec2 from "gl-vec2";
 import Vertex from "./Vertex";
 import randomFloat from "random-float";
-let two = [
-  {
-    start: [0, 0.85],
-    end: [0.5, 0.15],
-    control: [0.5 , 0.75]
-  }, {
-    start: [1, 0.85],
-    end: [0.75, 0.1],
-    control: [0.78, 0.78]
-  }
-]
-const vertices = [new Vertex(two[1].start), new Vertex(two[1].end), new Vertex(two[1].control)];
-// const start = new Vertex([0.15 - Math.random() % 0.5, 0.85 - Math.random() % 0.5]);
-// const end = new Vertex([0.9 - Math.random() % 0.5, 0.15 - Math.random() % 0.5]);
-// let control = new Vertex([0.75 - Math.random() % 0.5, 0.75 - Math.random() % 0.5]);
+
+// const vertices = [new Vertex(two[1].start), new Vertex(two[1].end), new Vertex(two[1].control)];
+const start = new Vertex([0, 0.85]);
+const end = new Vertex([0.35, 0.35]);
+let control = new Vertex([0.35, 0.65]);
+
+const start2 = new Vertex([1, 0.9]);
+const end2 = new Vertex([0.5, 0.5]);
+let control2 = new Vertex([0.75 - Math.random() % 0.25, 0.75 - Math.random() % 0.25]);
+
 let originleafWidth = 0.05 + randomFloat(-0.01, 0.025);
-let colors = ['#00C88A', '#1ECC92', '#3AB795']
-// const vertices = [start, end, control];
+let originleafWidth2 = 0.05 + randomFloat(-0.01, 0.035);
+let colors = ['#A3E09D', '#247BA0', '#3AB795']
+const vertices = [start, end, control];
+const vertices2 = [start2, end2, control2];
 
 const mouseRadius = 0.1;
 const mouseStrength = 0.0000045;
@@ -39,13 +36,13 @@ export function onClick() {
 }
 
 const drawPoint = (context, position, radius, alpha = 1) => {
-  // context.beginPath();
-  // context.globalAlpha = alpha;
-  // context.arc(position[0], position[1], radius, 0, Math.PI * 2, false);
-  // context.stroke();
+  context.beginPath();
+  context.globalAlpha = alpha;
+  context.arc(position[0], position[1], radius, 0, Math.PI * 2, false);
+  context.stroke();
 };
 
-export function draw({ context, scale, mousePosition, mouseVelocity, start, end, control }) {
+export function draw({ context, scale, mousePosition, mouseVelocity }) {
   // Draw mouse pointer & radius
   drawPoint(context, mousePosition, mouseRadius, 0.15);
 
@@ -69,7 +66,34 @@ export function draw({ context, scale, mousePosition, mouseVelocity, start, end,
     segments: 20
   });
 
-  drawLeaves(context, path, 0.005);
+  drawLeaves({context, stemPath: path, radius: 0.005, width: originleafWidth, color: colors[0]});
+
+  // Add the mouse influence and update each vertex
+  vertices2.forEach(v => {
+    v.addMouseInfluence(
+      mousePosition,
+      mouseVelocity,
+      mouseRadius,
+      mouseStrength
+    );
+    v.update();
+  });
+
+  const path2 = drawStem({
+    context,
+    start: start2.position,
+    control: control2.position,
+    end: end2.position,
+    segments: 20
+  });
+
+  drawLeaves({
+    context,
+    stemPath: path2,
+    radius: 0.005,
+    color: colors[1],
+    width: originleafWidth2
+  });
 }
 
 function drawStem(opt = {}) {
@@ -96,17 +120,17 @@ function drawStem(opt = {}) {
     const points = [start, control, end].filter(Boolean);
     points.forEach((point, i) => {
       const size = (point === control ? 0.5 : 1) * radius;
-      drawPoint(context, point, size);
+      // drawPoint(context, point, size);
     });
 
-    if (control && stroke) {
-      context.beginPath();
-      context.moveTo(start[0], start[1]);
-      context.lineTo(control[0], control[1]);
-      context.lineTo(end[0], end[1]);
-      context.globalAlpha = 0.15;
-      context.stroke();
-    }
+    // if (control && stroke) {
+    //   context.beginPath();
+    //   context.moveTo(start[0], start[1]);
+    //   context.lineTo(control[0], control[1]);
+    //   context.lineTo(end[0], end[1]);
+    //   context.globalAlpha = 0.15;
+    //   context.stroke();
+    // }
   }
 
   // Now, get a discrete set of points along that curve
@@ -121,7 +145,9 @@ function drawStem(opt = {}) {
   return path;
 }
 
-function drawLeaves(context, stemPath, radius = 0.005) {
+function drawLeaves(opt = {}) {
+  const {context, stemPath, radius = 0.005, width, color} = opt;
+
   // Now for each point in this stem, extrude out a leaf
   for (let i = 1; i < stemPath.length; i++) {
     const t = i / Math.max(stemPath.length - 1, 1);
@@ -152,12 +178,12 @@ function drawLeaves(context, stemPath, radius = 0.005) {
         [],
         current,
         leafDirection,
-        direction * extrudeDistance
+        direction * extrudeDistance * 0.9
       );
-      let leafPath = drawStem({ context, start: current, end: leafEnd, radius, segments: 10 });
+      let leafPath = drawStem({ context, start: current, end: leafEnd, radius, segments: 15 });
       // if not the stem's end point, render leafpatten
       if (i !== stemPath.length - 1) {
-        drawLeafPatten({context, start: current, end: leafEnd, leafPath: leafPath, radius: 0.0025, leafWidthParams: leafWidthParams});
+        drawLeafPatten({context, start: current, end: leafEnd, leafPath: leafPath, radius: 0.0025, leafWidthParams: leafWidthParams, width: width, color});
       }
       drawStem({ context, start: current, end: leafEnd, radius, segments: 10 });
     });
@@ -165,7 +191,7 @@ function drawLeaves(context, stemPath, radius = 0.005) {
 }
 
 function drawLeafPatten (opt = {}) {
-  const { context, start, end, leafPath, radius, leafWidthParams } = opt;
+  const { context, start, end, leafPath, radius, leafWidthParams, width, color } = opt;
   // extend leaf patten
   for (let i = 1; i < leafPath.length; i++) {
     const t = i / Math.max(leafPath.length - 1, 1);
@@ -179,7 +205,7 @@ function drawLeafPatten (opt = {}) {
     const perpendicular = [-normal[1], normal[0]];
     // Extrude out in both directions
     const directions = [-1, 1];
-    const leafWidth = originleafWidth + leafWidthParams;
+    const leafWidth = width + leafWidthParams;
     const leafShape = Math.sin(t * Math.PI);
     const extrudeDistance = leafShape * leafWidth / 2;
     directions.forEach(direction => {
@@ -199,13 +225,13 @@ function drawLeafPatten (opt = {}) {
       if (i === 1) {
         const leafborderEnd = vec2.scaleAndAdd(
           [],
-          leafPath[5],
+          leafPath[10],
           leafDirection,
-          direction * extrudeDistance * 6
+          direction * extrudeDistance * 10
         );
         context.lineWidth = 0.001;
         context.beginPath();
-        context.fillStyle = "#A3E09D";
+        context.fillStyle = color;
         context.strokeStyle = "transparent";
         context.moveTo(leafPath[0][0], leafPath[0][1]);
         context.quadraticCurveTo(leafborderEnd[0], leafborderEnd[1], leafPath[leafPath.length-1][0], leafPath[leafPath.length-1][1]);

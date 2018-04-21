@@ -1,28 +1,6 @@
 import {onClick, draw} from "./draw";
 import Vertex from "./Vertex";
 
-// let two = [
-//   {
-//     start: [0, 0.85],
-//     end: [0.5, 0.15],
-//     control: [0.5 - Math.random() % 0.5, 0.75 - Math.random() % 0.5]
-//   }, {
-//     start: [1, 0.85],
-//     end: [0.75, 0.1],
-//     control: [1 - Math.random() % 0.5, 1 - Math.random() % 0.5]
-//   }
-// ]
-let two = [
-  {
-    start: [0, 0.85],
-    end: [0.5, 0.15],
-    control: [0.5 , 0.75]
-  }, {
-    start: [1, 0.85],
-    end: [0.75, 0.1],
-    control: [0.78, 0.78]
-  }
-]
 // A simple touch utility
 import touches from "touches";
 import TouchVelocity from "touch-velocity";
@@ -118,20 +96,15 @@ function render() {
   context.fillStyle = context.strokeStyle = "black";
 
   // Render scene
-  for (let i = 0; i < 2; i++) {
-    draw({
-      context,
-      width,
-      height,
-      scale,
-      pixelRatio,
-      mousePosition,
-      mouseVelocity,
-      start: new Vertex(two[i].start),
-      end: new Vertex(two[i].end),
-      control: new Vertex(two[i].control)
-    });
-  }
+  draw({
+    context,
+    width,
+    height,
+    scale,
+    pixelRatio,
+    mousePosition,
+    mouseVelocity
+  });
 
   // Reset for next draw call
   context.restore();
