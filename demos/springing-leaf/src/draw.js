@@ -13,7 +13,7 @@ let control2 = new Vertex([0.75 - Math.random() % 0.25, 0.75 - Math.random() % 0
 
 let originleafWidth = 0.05 + randomFloat(-0.01, 0.025);
 let originleafWidth2 = 0.05 + randomFloat(-0.01, 0.035);
-let colors = ['#A3E09D', '#247BA0', '#3AB795']
+let colors = ['#67DF7B', '#479755', '#54B464']
 const vertices = [start, end, control];
 const vertices2 = [start2, end2, control2];
 
@@ -102,6 +102,7 @@ function drawStem(opt = {}) {
   // First, we draw the line that makes up this stem
   let color = colors[2];
   context.beginPath();
+  context.lineWidth = 0.0025;
   context.strokeStyle = color;
   context.moveTo(start[0], start[1]);
   if (control) {
