@@ -1,47 +1,30 @@
-// import SceneManager from './SceneManager';
 import RenderStem from './RenderStem';
 
-export default container => {
-    const canvas = createCanvas(document, container);
-    // const sceneManager = new SceneManager(canvas);
-    RenderStem();
-    // let canvasHalfWidth;
-    // let canvasHalfHeight;
+export default containerElement => {
+  const canvas = createCanvas(document, containerElement);
+  const sceneManager = new RenderStem(canvas);
 
-    bindEventListeners();
-    render();
+  bindEventListeners();
+  render();
 
-    function createCanvas(document, container) {
-        const canvas = document.createElement('canvas');
-        container.appendChild(canvas);
-        return canvas;
-    }
-
-    function bindEventListeners() {
-        window.onresize = resizeCanvas;
-        window.onmousemove = mouseMove;
-        resizeCanvas();
-    }
-
-    function resizeCanvas() {
-        canvas.style.width = '100%';
-        canvas.style.height= '100%';
-
-        canvas.width  = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-
-        // canvasHalfWidth = Math.round(canvas.offsetWidth/2);
-        // canvasHalfHeight = Math.round(canvas.offsetHeight/2);
-
-        // sceneManager.onWindowResize()
-    }
-
-    function mouseMove({screenX, screenY}) {
-        // sceneManager.onMouseMove(screenX-canvasHalfWidth, screenY-canvasHalfHeight);
-    }
-
-    function render(time) {
-        requestAnimationFrame(render);
-        // sceneManager.update();
-    }
+  function createCanvas(document, containerElement) {
+    const canvas = document.createElement('canvas');
+    containerElement.appendChild(canvas);
+    return canvas;
+  }
+  function bindEventListeners() {
+    window.onresize = resizeCanvas;
+    resizeCanvas();
+  }
+  function resizeCanvas() {
+    canvas.style.width = '100%';
+    canvas.style.height= '100%';
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    sceneManager.onWindowResize();
+  }
+  function render(time) {
+    requestAnimationFrame(render);
+    sceneManager.update();
+  }
 }
